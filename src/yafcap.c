@@ -68,6 +68,9 @@
 #include <airframe/airutil.h>
 #include <pcap.h>
 #include <zlib.h>
+#if 1
+#include <unistd.h>
+#endif
 
 #ifdef YAF_ENABLE_BIVIO
 #include <pcap-zcopy.h>
@@ -464,8 +467,14 @@ static gboolean yfCapFileListNext(
         /* get the next line from the name list file */
         if (!fgets(cappath, FILENAME_MAX, cs->lfp)) {
             if (feof(cs->lfp)) {
+#if 1
+	        g_debug("End of pcap file list");
+		sleep(1);
+		continue;
+#else
                 g_set_error(err, YAF_ERROR_DOMAIN, YAF_ERROR_EOF,
                     "End of pcap file list");
+#endif
             } else {
                 g_set_error(err, YAF_ERROR_DOMAIN, YAF_ERROR_IO,
                     "Couldn't read pcap file list: %s", strerror(errno));
@@ -475,9 +484,16 @@ static gboolean yfCapFileListNext(
 
         /* ensure filename is null terminated */
         cappath[FILENAME_MAX] = (char)0;
+#if 1
+	g_debug("pcap file: %s", cappath);
+#endif
 
         /* skip comments and blank lines */
         if (cappath[0] == '\n' || cappath[0] == '#') {
+
+#if 1
+	    g_debug("skip comments and blank lines");
+#endif
             continue;
         }
 
@@ -485,8 +501,14 @@ static gboolean yfCapFileListNext(
         cappath_len = strlen(cappath);
         if (cappath[cappath_len-1] == '\n') {
             cappath[cappath_len-1] = (char)0;
+#if 1
+	    g_debug("remove trailing newline");
+#endif
         }
 
+#if 1
+	g_debug("open pcap file: %s", cappath);
+#endif
         /* we have what we think is a filename. try opening it. */
         cs->pcap = yfCapOpenFileInner(cappath, &this_datalink, cs->tmp, err);
         if (!cs->pcap) {
